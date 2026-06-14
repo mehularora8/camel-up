@@ -18,4 +18,5 @@ classifiers = [
 camelup = "camel_up.repl:main"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["camel_up*"]

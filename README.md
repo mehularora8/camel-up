@@ -32,12 +32,20 @@ To update later:
 pipx upgrade camel-up-solver
 ```
 
-### Without pipx
+### Without pipx (from a clone)
 
 ```bash
 git clone https://github.com/<you>/camel-up-solver
 cd camel-up-solver
-python -m camel_up
+pip install -e .
+camelup
+```
+
+`-e` installs in editable mode so source edits take effect immediately. If you'd
+rather not install at all, you can run the package directly from `src/`:
+
+```bash
+PYTHONPATH=src python -m camel_up
 ```
 
 ## Commands
