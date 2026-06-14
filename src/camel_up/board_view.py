@@ -1,5 +1,6 @@
 """Board rendering: visual stack-up-from-track diagram for the REPL."""
-from .constants import COLORS, FINISH, LETTER
+from .constants import COLORS, FINISH
+from .theme import glyph, paint
 
 
 def render_board(state) -> str:
@@ -15,7 +16,7 @@ def render_board(state) -> str:
     max_h = max((len(state.track.get(sp, [])) for sp in spaces), default=0)
     for h in range(max_h, 0, -1):
         row = "".join(
-            f" {LETTER[state.track[sp][h-1]]} " if len(state.track.get(sp, [])) >= h else "   "
+            f" {glyph(state.track[sp][h-1])} " if len(state.track.get(sp, [])) >= h else "   "
             for sp in spaces
         )
         out.append("  " + row.rstrip())
@@ -40,16 +41,16 @@ def render_board(state) -> str:
         if has_mine:
             out.append("  " + mine_row.rstrip() + "    (* = your tile)")
 
-    rolled = ", ".join(sorted(state.rolled)) or "none"
+    rolled = ", ".join(paint(tok, tok) for tok in sorted(state.rolled)) or "none"
     out.append("")
     out.append(f"  rolled this leg: {rolled}")
     ticket_bits = []
     for c in COLORS:
         stack = state.leg_tickets[c]
-        ticket_bits.append(f"{LETTER[c]}=[{','.join(str(v) for v in stack) or '-'}]")
+        ticket_bits.append(f"{glyph(c)}=[{','.join(str(v) for v in stack) or '-'}]")
     out.append(f"  leg tickets:     {'  '.join(ticket_bits)}")
     if state.held_tickets:
-        held = "  ".join(f"{LETTER[h.color]}+{h.value}" for h in state.held_tickets)
+        held = "  ".join(f"{glyph(h.color)}+{h.value}" for h in state.held_tickets)
         out.append(f"  you hold:        {held}")
     out.append(f"  your coins: {state.coins}")
     out.append("-------------")

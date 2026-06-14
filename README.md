@@ -2,7 +2,7 @@
 
 A terminal decision-support REPL for [Camel Up](https://boardgamegeek.com/boardgame/153938/camel-up).
 Feed it the table state (rolls, tiles, ticket grabs) as the game plays out, then
-ask `/sim` for the EV of each available bet or `/verify` for an exact answer.
+ask `/sim` for the EV of each available bet (or `/sim verify` for an exact answer).
 
 ```
 camelup> /setup random
@@ -14,35 +14,35 @@ camelup> /sim
 
 ## Install
 
-You need Python 3.9+ and [`pipx`](https://pipx.pypa.io/).
+You need Python 3.9+. The recommended way is [`pipx`](https://pipx.pypa.io/),
+which installs `camelup` into its own isolated environment and puts it on your
+PATH:
 
 ```bash
-pipx install git+https://github.com/<you>/camel-up-solver
-```
-
-That puts a `camelup` shim on your PATH. Run it from anywhere:
-
-```bash
+pipx install camel-up-solver
 camelup
 ```
 
-To update later:
+Or with plain `pip`:
 
 ```bash
-pipx upgrade camel-up-solver
-```
-
-### Without pipx (from a clone)
-
-```bash
-git clone https://github.com/<you>/camel-up-solver
-cd camel-up-solver
-pip install -e .
+pip install camel-up-solver
 camelup
 ```
 
-`-e` installs in editable mode so source edits take effect immediately. If you'd
-rather not install at all, you can run the package directly from `src/`:
+Update later with `pipx upgrade camel-up-solver` (or `pip install -U
+camel-up-solver`).
+
+### From source
+
+```bash
+git clone https://github.com/mehularora8/camel-up
+cd camel-up
+pip install -e .   # editable: source edits take effect immediately
+camelup
+```
+
+Or run it without installing:
 
 ```bash
 PYTHONPATH=src python -m camel_up
@@ -62,8 +62,7 @@ All commands start with `/`. Type `/help` inside the REPL for the full list.
 | `/endleg` | manually end the leg; also fires automatically when the pyramid empties |
 | `/show` | print the current board |
 | `/undo` | undo the last action |
-| `/sim [n]` | Monte Carlo EV of every leg bet + race odds (default 10,000 rollouts) |
-| `/verify` | EXACT leg-bet EV via full completion enumeration |
+| `/sim [n] [verify]` | Monte Carlo EV of every leg bet + race odds (default 10,000 rollouts); add `verify` for EXACT leg-bet EV via full completion enumeration |
 | `/help` | command reference |
 | `/quit` | exit |
 
@@ -72,7 +71,7 @@ Colors: `r b g y p` for the racing camels (red/blue/green/yellow/purple);
 
 ## How it works
 
-- The leg is small enough to solve exactly (`/verify` enumerates every
+- The leg is small enough to solve exactly (`/sim verify` enumerates every
   remaining permutation × outcome — tractable up to ~1M completions, instant
   once a die or two has been rolled).
 - The full race spans many legs and is Monte Carlo only.

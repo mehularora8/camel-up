@@ -4,6 +4,7 @@ import math
 from .constants import COLORS
 from .engine import pending_dice
 from .sim import simulate_leg, simulate_race, enumerate_leg
+from .theme import paint
 
 
 def _leg_ev(stats, color, ticket_value):
@@ -32,13 +33,13 @@ def run_sim(game, n):
         ticket = stack[0]
         rows.append((_leg_ev(leg, c, ticket), c, leg.p_first[c], leg.p_second[c], ticket))
     for ev, c, w, s2, t in sorted(rows, reverse=True):
-        print(f"  {c:<8}{t:>5}{round(w,3):>9}{round(s2,3):>10}{round(ev,2):>9}")
+        print(f"  {paint(f'{c:<8}', c)}{t:>5}{round(w,3):>9}{round(s2,3):>10}{round(ev,2):>9}")
     for c in taken:
-        print(f"  {c:<8}{'-':>5}{round(leg.p_first[c],3):>9}"
+        print(f"  {paint(f'{c:<8}', c)}{'-':>5}{round(leg.p_first[c],3):>9}"
               f"{round(leg.p_second[c],3):>10}{'(taken)':>9}")
     if rows:
         best = max(rows)
-        print(f"  -> best leg bet: {best[1]} +{best[4]} (EV {best[0]:+.2f})")
+        print(f"  -> best leg bet: {paint(best[1], best[1])} +{best[4]} (EV {best[0]:+.2f})")
     else:
         print("  -> all leg tickets taken this leg.")
 
@@ -46,13 +47,13 @@ def run_sim(game, n):
     print("\nRACE odds (dice-only, from current state):")
     print(f"  {'color':<8}{'P(win)':>9}{'P(lose)':>10}")
     for c in sorted(COLORS, key=lambda x: race.p_win[x], reverse=True):
-        print(f"  {c:<8}{round(race.p_win[c],3):>9}{round(race.p_lose[c],3):>10}")
+        print(f"  {paint(f'{c:<8}', c)}{round(race.p_win[c],3):>9}{round(race.p_lose[c],3):>10}")
 
     if any(t.mine for t in s.tiles.values()):
         print(f"\nYour tile landing EV: {leg.tile_ev:.3f} coins this leg")
     if s.held_tickets:
         held_ev = sum(_leg_ev(leg, h.color, h.value) for h in s.held_tickets)
-        held_str = ", ".join(f"{h.color}+{h.value}" for h in s.held_tickets)
+        held_str = ", ".join(f"{paint(h.color, h.color)}+{h.value}" for h in s.held_tickets)
         print(f"\nHeld tickets ({held_str}) EV: {held_ev:+.2f} coins at endleg")
     print("=================\n")
 
@@ -78,19 +79,19 @@ def run_verify(game):
     for c in COLORS:
         stack = s.leg_tickets[c]
         if not stack:
-            print(f"  {c:<8}{'-':>5}{round(leg.p_first[c],4):>10}"
+            print(f"  {paint(f'{c:<8}', c)}{'-':>5}{round(leg.p_first[c],4):>10}"
                   f"{round(leg.p_second[c],4):>10}{'(taken)':>10}")
             continue
         t = stack[0]
         rows.append((_leg_ev(leg, c, t), c, leg.p_first[c], leg.p_second[c], t))
     for ev, c, w, s2, t in sorted(rows, reverse=True):
-        print(f"  {c:<8}{t:>5}{round(w,4):>10}{round(s2,4):>10}{round(ev,3):>10}")
+        print(f"  {paint(f'{c:<8}', c)}{t:>5}{round(w,4):>10}{round(s2,4):>10}{round(ev,3):>10}")
     if rows:
         best = max(rows)
-        print(f"  -> best leg bet: {best[1]} +{best[4]} (EV {best[0]:+.3f})")
+        print(f"  -> best leg bet: {paint(best[1], best[1])} +{best[4]} (EV {best[0]:+.3f})")
     if s.held_tickets:
         held_ev = sum(_leg_ev(leg, h.color, h.value) for h in s.held_tickets)
-        held_str = ", ".join(f"{h.color}+{h.value}" for h in s.held_tickets)
+        held_str = ", ".join(f"{paint(h.color, h.color)}+{h.value}" for h in s.held_tickets)
         print(f"\nHeld tickets ({held_str}) EXACT EV: {held_ev:+.3f} coins at endleg")
     if any(t.mine for t in s.tiles.values()):
         print(f"\nYour tile landing EV (exact): {leg.tile_ev:.4f} coins this leg")

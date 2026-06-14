@@ -9,6 +9,7 @@ from .constants import COLORS, FINISH, is_backward, norm_color
 from .state import State, TileSpec, HeldTicket
 from .engine import move_camel, ranking
 from .board_view import render_board
+from .theme import paint
 
 
 class Game:
@@ -17,6 +18,13 @@ class Game:
         self.setup_done = False
         self.history = []          # raw command strings (post-setup)
         self._setup_state = None   # snapshot for undo replay
+        self.messages = []         # log from the last action, shown under the board
+        self._quiet = False        # suppress logging while replaying for undo
+
+    def _log(self, msg):
+        """Record a status line for the REPL to render beneath the board."""
+        if not self._quiet:
+            self.messages.append(msg)
 
     # ----- setup -----
     def do_setup(self, args):
@@ -39,6 +47,8 @@ class Game:
         self.setup_done = True
         self._setup_state = self.state.copy()
         self.history = []
+        self.messages = []
+        self._log("setup complete.")
 
     # ----- actions (mutate state in place) -----
     def act_roll(self, color, steps, mine):
@@ -51,26 +61,31 @@ class Game:
             self.state.rolled.add("grey")
         else:
             self.state.rolled.add(color)
+        direction = "back" if is_backward(color) else "forward"
+        note = " (you rolled, +1 coin)" if mine else ""
+        self._log(f"{paint(color, color)} moved {direction} {steps}{note}.")
         # pyramid empty -> leg ends automatically
         if self.state.rolled >= set(COLORS) | {"grey"}:
-            print("(pyramid empty -> auto endleg)")
+            self._log("(pyramid empty -> auto endleg)")
             self.act_endleg()
 
     def act_tile(self, space, kind, mine):
         delta = +1 if kind == "oasis" else -1
         self.state.tiles[space] = TileSpec(delta, mine)
+        who = " (your tile)" if mine else ""
+        self._log(f"placed {kind} ({'+1' if delta > 0 else '-1'}) at {space}{who}.")
 
     def act_take(self, color, mine):
         stack = self.state.leg_tickets.get(color, [])
         if not stack:
-            print(f"no {color} leg-bet tickets left this leg.")
+            self._log(f"no {paint(color, color)} leg-bet tickets left this leg.")
             return
         val = stack.pop(0)
         if mine:
             self.state.held_tickets.append(HeldTicket(color, val))
-            print(f"you took {color} +{val} leg ticket (held until endleg).")
+            self._log(f"you took {paint(color, color)} +{val} leg ticket (held until endleg).")
         else:
-            print(f"opponent took {color} +{val} leg ticket.")
+            self._log(f"opponent took {paint(color, color)} +{val} leg ticket.")
 
     def act_endleg(self):
         held = self.state.held_tickets
@@ -84,8 +99,12 @@ class Game:
                 elif ht.color == second:  delta += 1
                 else:                     delta -= 1
             self.state.coins += delta
-            print(f"leg result: 1st={winner}, 2nd={second}. "
-                  f"payout {delta:+d} -> you now have {self.state.coins} coins.")
+            win_s = paint(winner, winner)
+            sec_s = paint(second, second) if second else second
+            self._log(f"leg result: 1st={win_s}, 2nd={sec_s}. "
+                      f"payout {delta:+d} -> you now have {self.state.coins} coins.")
+        else:
+            self._log("leg ended.")
         self.state.held_tickets = []
         self.state.rolled = set()
         self.state.tiles = {}                  # tiles returned each leg
@@ -93,6 +112,8 @@ class Game:
 
     # ----- dispatch (live input + replay) -----
     def dispatch(self, line, record=True):
+        if record:
+            self.messages = []     # live action: start a fresh log for this turn
         parts = shlex.split(line)
         if not parts:
             return
@@ -120,13 +141,18 @@ class Game:
             self.history.append(line)
 
     def undo(self):
+        self.messages = []
         if not self.history:
-            print("nothing to undo."); return
+            self._log("nothing to undo."); return
         dropped = self.history.pop()
         self.state = self._setup_state.copy()
-        for line in self.history:
-            self.dispatch(line, record=False)
-        print(f"undid: {dropped}")
+        self._quiet = True         # replayed actions shouldn't spam the log
+        try:
+            for line in self.history:
+                self.dispatch(line, record=False)
+        finally:
+            self._quiet = False
+        self._log(f"undid: {dropped}")
 
     def show(self):
         """Convenience: print the board view of the current state."""
