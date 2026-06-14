@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "camel-up-solver"
+version = "0.1.0"
+description = "Terminal decision-support REPL and EV solver for Camel Up"
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+    "Topic :: Games/Entertainment :: Board Games",
+]
+
+[project.scripts]
+camelup = "camel_up.repl:main"
+
+[tool.setuptools.packages.find]
+include = ["camel_up*"]
