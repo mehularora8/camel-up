@@ -1,7 +1,7 @@
 # camel-up-solver
 
-A terminal decision-support REPL for [Camel Up](https://boardgamegeek.com/boardgame/153938/camel-up).
-Feed it the table state (rolls, tiles, ticket grabs) as the game plays out, then
+A solver for [Camel Up](https://boardgamegeek.com/boardgame/153938/camel-up).
+Input: game state (rolls, tiles, ticket grabs) as the game plays out, then
 ask `/sim` for the EV of each available bet (or `/sim verify` for an exact answer).
 
 ```
@@ -77,16 +77,3 @@ Colors: `r b g y p` for the racing camels (red/blue/green/yellow/purple);
 - The full race spans many legs and is Monte Carlo only.
 - Held tickets pay out automatically at `/endleg` from the final board:
   1st = +face value, 2nd = +1, 3rd-5th = -1.
-
-## Programmatic use
-
-```python
-from camel_up import Game, run_sim, run_verify
-
-g = Game()
-g.do_setup(['random'])
-g.dispatch('take g mine')
-g.dispatch('roll y 3')
-run_sim(g, 10_000)
-run_verify(g)
-```

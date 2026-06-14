@@ -15,26 +15,29 @@ from .theme import clear_screen, glyph, paint
 HELP = """
 commands (all start with '/'):
   /setup r=1 b=1 g=2 y=3 p=2 w=16 k=16   seed starting spaces (run once)
-       (racers usually start near space 1; backward camels w/k start at the
-        far end ~space 16 and move toward start)
+
   /setup random                          debug: random rule-ish initial placement
+
   /roll <color> <1-3> [mine]   a die popped: move camel, mark rolled.
        'mine' = YOU pulled the die (+1 pyramid coin to your bank).
-       'mine' tile landings always credit you regardless of who rolled.
-       racers: r b g y p   |   backward (grey die): w (white) k (black)
-       a w/k roll consumes the single shared grey die for the leg
+
+
   /tile <space> oasis|mirage [mine]   place a desert tile
+
   /take <color> [mine]         pop the top leg-bet ticket for <color>
-                               (5 -> 3 -> 2 -> 2 -> none; 'mine' = you keep it)
-  /endleg                      end the leg manually (also fires automatically
+                               ('mine' = you keep it)
+
+  /endleg                      end the leg (also fires automatically
                                once all 5 racers + the grey die are rolled).
-                               auto-pays held tickets from the current board
-                               (1st = +value, mid = +1, last = -1)
+
   /show                        redraw the current board/state
+
   /undo                        undo last action (replay from setup)
+
   /sim [n] [verify]            Monte Carlo EV of each play (default n=10000).
                                add 'verify' for EXACT leg-bet EV by enumerating
                                all completions (instant after 1+ dice rolled).
+                               
   /help                        this
   /quit                        exit
 colors: red blue green yellow purple (r/b/g/y/p); white=w black=k (backward)
